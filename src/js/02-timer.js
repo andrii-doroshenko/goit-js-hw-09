@@ -27,8 +27,15 @@ class Timer {
     this.isActive = true;
 
     this.intervalId = setInterval(() => {
-      const deltaTime = this.convertMs(this.countTime - Date.now());
-      this.onTick(deltaTime);
+      let timeRemainder = this.countTime - Date.now();
+
+      if (timeRemainder <= 0) {
+        this.stop();
+        return;
+      }
+
+      const time = this.convertMs(timeRemainder);
+      this.onTick(time);
     }, 1000);
   }
 
@@ -37,6 +44,10 @@ class Timer {
     Notify.success('Deadline !!! Reload the page please !', {
       cssAnimationStyle: 'from-right',
     });
+    refs.startBtn.disabled = true;
+    this.isActive = false;
+    const time = this.convertMs(0);
+    this.onTick(time);
   }
 
   convertMs(ms) {
@@ -97,10 +108,6 @@ const fp = flatpickr(refs.input, {
 });
 
 function updateClockFace({ days, hours, minutes, seconds }) {
-  if (days === '00' && hours === '00' && minutes === '00' && seconds === '00') {
-    timer.stop();
-  }
-
   refs.days.textContent = `${days}`;
   refs.hours.textContent = `${hours}`;
   refs.minutes.textContent = `${minutes}`;
